@@ -25,6 +25,7 @@ ffmpeg_location = data["ffmpeg_location"]
 sox_location = data["sox_location"]
 thread_raw = data["thread"]
 magick_location = data["magick_location"]
+chrome_location = data["chrome_driver_location"]
 
 print ("FFMPEG LOCATION: " + ffmpeg_location)
 print ("SOX LOCATION: " + sox_location)
@@ -128,7 +129,7 @@ wget = ["curl", "-o", "./assets/temp/title_temp.html", "-A", "CRAwL TooxO", thre
 subprocess.call(wget)
 modify("./assets/temp/title_temp.html", "./assets/temp/title.html")
 
-screenshot(linklist, "./assets/temp/title.html")
+screenshot(linklist, "./assets/temp/title.html", chrome_location)
 cropAndMove(magick_location, linklist, "./assets/temp/title.png")
 imageToVideo(ffmpeg_location, linklist, lengthlist)
 addTheAudio(ffmpeg_location, linklist, "./assets/audio/title.mp3", "./assets/video_silent/title.mp4")

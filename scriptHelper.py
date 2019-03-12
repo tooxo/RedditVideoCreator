@@ -83,18 +83,20 @@ def modifyComment(num):
 	f.close()
 	os.remove(file)
 				
-def screenshot(list, title):
+def screenshot(list, title, chrome_driver):
 	print ('Headless')
+	
+	chrome = chrome_driver.replace('/', '\\')
 	_start = time.time()
 	options = Options()
 	options.add_argument("--headless") # Runs Chrome in headless mode.
-	options.add_argument('--no-sandbox') # # Bypass OS security model
+	options.add_argument('--no-sandbox') # Bypass OS security model
 	options.add_argument('start-maximized')
 	options.add_argument('disable-infobars')
 	options.add_argument("--disable-extensions")
 	options.add_argument("--log-level=3")
 	options.add_argument("--window-size=1920,1080")
-	driver = webdriver.Chrome(chrome_options=options, executable_path='chromedriver.exe')
+	driver = webdriver.Chrome(chrome_options=options, executable_path=chrome)
 	for x in range(0, len(list)):
 		driver.get(os.getcwd() + '\\screenshot\\' + str(x) + '.html')
 		driver.execute_script("document.body.style.zoom='250%'")
