@@ -53,6 +53,7 @@ title = json[0]["data"]["children"][0]["data"]["title"]
 comments = json[1]["data"]["children"]
 linklist = []
 textlist = []
+numberlist = []
 for comment in comments: 
 	try:
 		permalink = "https://www.reddit.com" + comment["data"]["permalink"]
@@ -94,7 +95,7 @@ for text in textlist:
 	check_length = [sox_location, "--i", "-D", "./assets/audio/" + str(o) + "_a.mp3"]
 	length = subprocess.check_output(check_length)
 	lengthlist.append(length.decode('utf-8'))
-	
+	numberlist.append(str(o))
 	o = o + 1
 
 if use == "main":
@@ -131,11 +132,11 @@ wget = ["curl", "-o", "./assets/temp/title_temp.html", "-A", "CRAwL TooxO", thre
 subprocess.call(wget)
 modify("./assets/temp/title_temp.html", "./assets/temp/title.html")
 
-screenshot(linklist, "./assets/temp/title.html", chrome_location)
+numberlist = screenshot(numberlist, "./assets/temp/title.html", chrome_location)
 cropAndMove(magick_location, linklist, "./assets/temp/title.png")
 imageToVideo(ffmpeg_location, linklist, lengthlist)
 addTheAudio(ffmpeg_location, linklist, "./assets/audio/title.mp3", "./assets/video_silent/title.mp4")
-renderComplete(ffmpeg_location, linklist)
+renderComplete(ffmpeg_location, numberlist)
 
 addMusicAndOutro(ffmpeg_location)
 

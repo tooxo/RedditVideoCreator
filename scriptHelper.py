@@ -61,7 +61,7 @@ def modifyComment(num):
 	f = io.open(output, mode="wb")
 	dom = etree.parse(file, parser)
 	body = dom.find('body')
-	body.attrib['style'] = 'overflow: hidden !important;'
+	body.attrib['style'] = 'overflow-x: hidden !important; min-height: 0 !important'
 	divs = dom.findall('.//div')
 	scripts = dom.findall('.//script')
 	for div in divs:
@@ -82,32 +82,39 @@ def modifyComment(num):
 	f.write(lxml.html.tostring(dom))
 	f.close()
 	os.remove(file)
-				
+
 def screenshot(list, title, chrome_driver):
 	print ('Headless')
 	
 	chrome = chrome_driver.replace('/', '\\')
 	_start = time.time()
 	options = Options()
-	options.add_argument("--headless") # Runs Chrome in headless mode.
-	options.add_argument('--no-sandbox') # Bypass OS security model
+	options.add_argument("--headless") 
+	options.add_argument('--no-sandbox') 
 	options.add_argument('start-maximized')
 	options.add_argument('disable-infobars')
 	options.add_argument("--disable-extensions")
 	options.add_argument("--log-level=3")
 	options.add_argument("--window-size=1920,1080")
 	driver = webdriver.Chrome(chrome_options=options, executable_path=chrome)
-	for x in range(0, len(list)):
-		driver.get(os.getcwd() + '\\screenshot\\' + str(x) + '.html')
+	for num in list:
+		driver.get(os.getcwd() + '\\screenshot\\' + num + '.html')
 		driver.execute_script("document.body.style.zoom='250%'")
-		driver.save_screenshot(os.getcwd() + '\\screenshot\\' + str(x) + '.png')
-		print("Done: " + str(x) + " / " + str(len(list)))
+		fenster = driver.execute_script("return document.body.scrollHeight")
+		if 1080 < fenster:
+			del list[int(num)]
+			print ("DELETED: " + num)
+			continue
+		else:
+			driver.save_screenshot(os.getcwd() + '\\screenshot\\' + num + '.png')
+			print("Done: " + num + " / " + str(len(list)))
 	driver.get(os.getcwd() + '\\assets\\temp\\title.html')
 	driver.execute_script("document.body.style.zoom='250%'")
 	driver.save_screenshot(os.getcwd() + '\\assets\\temp\\title.png')
 	driver.quit()
 	_end = time.time()
 	print ('Total time for headless {}'.format(_end - _start))
+	return list
 	
 def cropAndMove(magick, list, title):
 	for x in range(0, len(list)):
@@ -145,10 +152,9 @@ def addTheAudio(ffmpeg, list, audio_title, video_title):
 		
 def renderComplete(ffmpeg, list):
 	f = io.open("./assets/tempfile.txt", mode="w+")
-	for x in range(0, len(list)):
-		f.write("file " + "video/" + str(x) + ".MTS" + "\n")
-		if x != len(list) - 1:
-			f.write("file " + "prerendered/censor.MTS" + "\n")
+	for num in list:
+		f.write("file " + "video/" + num + ".MTS" + "\n")
+		f.write("file " + "prerendered/censor.MTS" + "\n")
 	f.close()
 	makeitgreat = [ffmpeg, "-y", "-f", "concat", "-safe", "0", "-i", "./assets/tempfile.txt", "-vcodec", "libx264", "-c", "copy", "./assets/temp/nomusic.MTS"]
 	subprocess.call(makeitgreat)
@@ -161,7 +167,8 @@ def addMusicAndOutro(ffmpeg):
 	f = io.open("./assets/tempfile.txt", mode="w+")
 	f.write("file video/title.MTS\n")
 	f.write("file temp/audio.MTS\n")
-	f.write("file prerendered/outro.MTS\n")
+	if os.path.isfile("./assets/prerendered/outro.MTS"):
+		f.write("file prerendered/outro.MTS\n")
 	f.close()
 	
 	finishup = [ffmpeg, "-y", "-f", "concat", "-safe", "0", "-i", "./assets/tempfile.txt", "-vcodec", "libx264", "-c", "copy", "./output/video.MTS"]
@@ -172,4 +179,5 @@ def cleanUP():
 	for folder in folder_to_clean:
 		files_to_delete = os.listdir(folder)
 		for file in files_to_delete:
-			os.remove(folder + file)
+			if ".git" not in file:
+				os.remove(folder + file)
