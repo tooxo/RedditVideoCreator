@@ -1,0 +1,6 @@
+{
+	"thread": "PUT_YOUR_ASKREDDIT_THREAD_HERE",
+	"ffmpeg_location": "./assets/bin/ffmpeg/ffmpeg.exe",
+	"sox_location": "./assets/bin/sox/sox.exe",
+	"magick_location": "./assets/bin/imagemagick/magick.exe"
+}
