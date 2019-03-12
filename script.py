@@ -57,7 +57,9 @@ for comment in comments:
 	try:
 		permalink = "https://www.reddit.com" + comment["data"]["permalink"]
 		linklist.append(permalink)
-		textlist.append(comment["data"]["body"])
+		body = comment["data"]["body"]
+		body = body.replace("&amp;#x200B;", "")
+		textlist.append(body)
 	except:
 		continue
 
