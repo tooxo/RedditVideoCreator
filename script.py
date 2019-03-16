@@ -5,6 +5,7 @@ import urllib.request
 import urllib.parse
 from scriptHelper import *
 import os
+import threading
 
 def countdown(time_d):
 	while time_d > 0:
@@ -78,12 +79,26 @@ else:
 os.remove("./test.mp3")
 
 lengthlist = []	
+threadlist = []
 
-for text in textlist:
+if use == "main":
+	voice = ["./assets/voice.exe", "-n", "ScanSoft Daniel_Full_22kHz", "--khz", "48", "-o", "./assets/audio/" + "title" + ".wav", title]
+else:
+	voice = ["./assets/voice.exe", "-n", "Microsoft David Desktop", "--khz", "48", "-o", "./assets/audio/title.wav", title]
+
+subprocess.call(voice)
+convert = [sox_location, "--norm", "./assets/audio/title.wav", "./assets/audio/title_a.mp3"]
+subprocess.call(convert)
+padding = [sox_location, "--norm", "./assets/audio/title_a.mp3", "./assets/audio/title.mp3", "pad", "0", "0.5"]
+subprocess.call(padding)
+
+
+
+def voiceThread(text, sox_location, o):
 	if use == "main":
-		voice = ["./assets/voice.exe", "-n", "ScanSoft Daniel_Full_22kHz", "-o", "./assets/audio/" + str(o) + ".wav", text]
+		voice = ["./assets/voice.exe", "-n", "ScanSoft Daniel_Full_22kHz", "--khz", "48", "-o", "./assets/audio/" + str(o) + ".wav", text]
 	else:
-		voice = ["./assets/voice.exe", "-n", "Microsoft David Desktop", "-o", "./assets/audio/" + str(o) + ".wav", text]
+		voice = ["./assets/voice.exe", "-n", "Microsoft David Desktop", "--khz", "48", "-o", "./assets/audio/" + str(o) + ".wav", text]
 	subprocess.call(voice)
 	
 	convert = [sox_location, "--norm", "./assets/audio/" + str(o) + ".wav", "./assets/audio/" + str(o) + "_a.mp3"]
@@ -96,27 +111,45 @@ for text in textlist:
 	length = subprocess.check_output(check_length)
 	lengthlist.append(length.decode('utf-8'))
 	numberlist.append(str(o))
+	print ("                                                     ", end="\r")
+	print ("Done: Thread " + str(o), end="\r")
+	
+for text in textlist:
+	th = threading.Thread(target=voiceThread, args=(text,sox_location,o))
+	threadlist.append(th)
 	o = o + 1
 
-if use == "main":
-	voice = ["./assets/voice.exe", "-n", "ScanSoft Daniel_Full_22kHz", "-o", "./assets/audio/title.wav", title]
-else: 
-	voice = ["./assets/voice.exe", "-n", "Microsoft David Desktop", "-o", "./assets/audio/title.wav", title]
-
-subprocess.call(voice)
-convert = [sox_location, "--norm", "./assets/audio/title.wav", "./assets/audio/title_a.mp3"]
-padding = [sox_location, "--norm", "./assets/audio/title_a.mp3", "./assets/audio/title.mp3", "pad", "0", "2"]
-subprocess.call(convert)
-subprocess.call(padding)
+for thread in threadlist:
+	thread.start()
 	
+for thread in threadlist:
+	thread.join()
+	
+_start = time.time()
 c = 0
-for link in linklist:
-	countdown(3)
-	filename = c
-	wget = ["curl", "--progress-bar", "-o", "temp/" + str(filename) + ".html", "-A", "CraWlER bY ToXoo", link]
+threadlist = []
+
+def downloadComments(link, c):
+	wget = ["curl",  "-o", "temp/" + str(c) + ".html", "-A", "CraWlER bY ToXoo", link]
 	subprocess.call(wget)
-	print ("Done:" + str(c + 1) + " / " + str(len(linklist)))
+	print ("                                                     ", end="\r")
+	print ("Done: Thread " + str(o), end="\r")
+	
+
+for link in linklist:
+	th = threading.Thread(target=downloadComments, args=(link, c))
+	threadlist.append(th)
 	c = c + 1
+
+for thread in threadlist:
+	thread.start()
+	time.sleep(1)
+	
+for thread in threadlist:
+	thread.join()
+	
+_end = time.time()
+print ('Total Time for Comment Downloading: {}'.format(_end - _start))
 print ("Finished downloading Comments. Going to modify.")
 
 for x in range(0, len(linklist)):
@@ -133,13 +166,14 @@ subprocess.call(wget)
 modify("./assets/temp/title_temp.html", "./assets/temp/title.html")
 
 numberlist = screenshot(numberlist, "./assets/temp/title.html", chrome_location)
-cropAndMove(magick_location, linklist, "./assets/temp/title.png")
-imageToVideo(ffmpeg_location, linklist, lengthlist)
-addTheAudio(ffmpeg_location, linklist, "./assets/audio/title.mp3", "./assets/video_silent/title.mp4")
+cropAndMove(magick_location, numberlist, "./assets/temp/title.png")
+print(str(numberlist))
+imageToVideo(ffmpeg_location, numberlist, lengthlist)
+addTheAudio(ffmpeg_location, numberlist, "./assets/audio/title.mp3", "./assets/video_silent/title.mp4")
 renderComplete(ffmpeg_location, numberlist)
 
 addMusicAndOutro(ffmpeg_location)
 
 print("CLEANING UP IN 10")
 countdown(9)
-cleanUP()
+#cleanUP()

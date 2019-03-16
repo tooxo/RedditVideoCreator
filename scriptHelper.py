@@ -100,10 +100,13 @@ def screenshot(list, title, chrome_driver):
 	for num in list:
 		driver.get(os.getcwd() + '\\screenshot\\' + num + '.html')
 		driver.execute_script("document.body.style.zoom='250%'")
-		fenster = driver.execute_script("return document.body.scrollHeight")
-		if 1080 < fenster:
-			del list[int(num)]
-			print ("DELETED: " + num)
+		time.sleep(0.5)
+		fenster = driver.execute_script("return document.documentElement.clientWidth")
+		print(str(fenster))
+		if fenster < 1920:
+			if num in list: 
+				list.remove(num)
+				print ("DELETED: " + num)
 			continue
 		else:
 			driver.save_screenshot(os.getcwd() + '\\screenshot\\' + num + '.png')
@@ -117,10 +120,10 @@ def screenshot(list, title, chrome_driver):
 	return list
 	
 def cropAndMove(magick, list, title):
-	for x in range(0, len(list)):
-		crop = [magick, "./screenshot/" + str(x) + ".png", "-resize", "1900x", "-trim", "./assets/images/" + str(x) + ".png"]
+	for num in list:
+		crop = [magick, "./screenshot/" + str(num) + ".png", "-resize", "1900x", "-trim", "./assets/images/" + str(num) + ".png"]
 		subprocess.call(crop)
-		print("Done: " + str(x) + " / " + str(len(list)))
+		print("Done: " + str(num) + " / " + str(len(list)))
 	crop_title = [magick, title, "-trim", "./assets/temp/title_b.png"]
 	subprocess.call(crop_title)
 	mod = [magick, "./assets/temp/title_b.png", "-bordercolor", "white", "-border", "2%x10%", "./assets/images/title.png"]
@@ -128,9 +131,9 @@ def cropAndMove(magick, list, title):
 
 	
 def imageToVideo(ffmpeg, list, length):
-	for x in range(0, len(list)):
-		video = lengthSwitch(length[x])
-		call = [ffmpeg, "-y", "-i", video, "-i", "./assets/images/" + str(x) + ".png", "-filter_complex", "overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2", "-codec:a", "copy", "./assets/video_silent/" + str(x) + ".mp4"]
+	for num in list:
+		video = lengthSwitch(length[int(num)])
+		call = [ffmpeg, "-y", "-i", video, "-i", "./assets/images/" + num + ".png", "-filter_complex", "overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2", "-codec:a", "copy", "./assets/video_silent/" + num + ".mp4"]
 		subprocess.call(call)
 	call = [ffmpeg, "-y", "-i", "./assets/prerendered/40white.mp4", "-i", "./assets/images/title.png", "-filter_complex", "overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2", "-codec:a", "copy", "./assets/video_silent/title.mp4"]
 	subprocess.call(call)
@@ -145,8 +148,8 @@ def addTheAudio(ffmpeg, list, audio_title, video_title):
 		convert = [ffmpeg, "-y", "-i", "./assets/video/" + str(x) + ".mp4", "-q", "0", "./assets/video/" + str(x) + ".MTS"]
 		subprocess.call(convert)
 	combine = [ffmpeg, "-y", "-i", video_title, "-i", audio_title, "-shortest", "-c", "copy", "./assets/video/title.mp4"]
-	convert = [ffmpeg, "-y", "-i", "./assets/video/title.mp4", "-q", "0", "./assets/video/title.MTS"]
 	subprocess.call(combine)
+	convert = [ffmpeg, "-y", "-i", "./assets/video/title.mp4", "-q", "0", "./assets/video/title.MTS"]
 	subprocess.call(convert)
 
 		
