@@ -1,5 +1,6 @@
 {
 	"thread": "https://www.reddit.com/r/AskReddit/comments/b24v5k/dear_reddit_what_is_your_weirdest_dreamnightmare/",
+	"_comment": "Your Thread URL goes above",
 	"ffmpeg_location": "./assets/bin/ffmpeg/ffmpeg.exe",
 	"sox_location": "./assets/bin/sox/sox.exe",
 	"magick_location": "./assets/bin/imagemagick/magick.exe",
