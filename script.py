@@ -182,4 +182,4 @@ addMusicAndOutro(ffmpeg_location)
 
 print("CLEANING UP IN 10")
 countdown(9)
-#cleanUP()
+cleanUP()
