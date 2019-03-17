@@ -107,9 +107,6 @@ def voiceThread(text, sox_location, o):
 	padding = [sox_location, "--norm", "./assets/audio/" + str(o) + "_a.mp3", "./assets/audio/" + str(o) + ".mp3", "pad", "0", "0.5"]
 	subprocess.call(padding)
 	
-	check_length = [sox_location, "--i", "-D", "./assets/audio/" + str(o) + "_a.mp3"]
-	length = subprocess.check_output(check_length)
-	lengthlist.append(length.decode('utf-8'))
 	numberlist.append(str(o))
 	print ("                                                     ", end="\r")
 	print ("Done: Thread " + str(o), end="\r")
@@ -124,6 +121,16 @@ for thread in threadlist:
 	
 for thread in threadlist:
 	thread.join()
+	
+numberlist.sort(key=int)
+	
+for numb in numberlist:
+	check_length = [sox_location, "--i", "-D", "./assets/audio/" + numb + "_a.mp3"]
+	length = subprocess.check_output(check_length)
+	lengthlist.append(length.decode('utf-8'))
+	
+print (lengthlist)
+	
 	
 _start = time.time()
 c = 0
@@ -165,9 +172,9 @@ wget = ["curl", "-o", "./assets/temp/title_temp.html", "-A", "CRAwL TooxO", thre
 subprocess.call(wget)
 modify("./assets/temp/title_temp.html", "./assets/temp/title.html")
 
+numberlist.sort(key=int)
 numberlist = screenshot(numberlist, "./assets/temp/title.html", chrome_location)
 cropAndMove(magick_location, numberlist, "./assets/temp/title.png")
-print(str(numberlist))
 imageToVideo(ffmpeg_location, numberlist, lengthlist)
 addTheAudio(ffmpeg_location, numberlist, "./assets/audio/title.mp3", "./assets/video_silent/title.mp4")
 renderComplete(ffmpeg_location, numberlist)

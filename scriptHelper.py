@@ -107,7 +107,6 @@ def screenshot(list, title, chrome_driver):
 			if num in list: 
 				list.remove(num)
 				print ("DELETED: " + num)
-			continue
 		else:
 			driver.save_screenshot(os.getcwd() + '\\screenshot\\' + num + '.png')
 			print("Done: " + num + " / " + str(len(list)))
