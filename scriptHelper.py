@@ -163,7 +163,7 @@ def renderComplete(ffmpeg, list):
 	
 def addMusicAndOutro(ffmpeg):
 	musicToAdd = "./assets/music/music" + str(random.randrange(7)) + ".mp3"
-	addMusic = [ffmpeg, "-y", "-i", "./assets/temp/nomusic.MTS", "-i", musicToAdd, "-c:v", "copy", "-shortest", "-filter_complex", "[0:a]amix[out]", "-map", "0:v", "-map", "[out]", "./assets/temp/audio.MTS"]
+	addMusic = [ffmpeg, "-y", "-i", "./assets/temp/nomusic.MTS", "-i", musicToAdd, "-shortest", "-filter_complex", "[0:a]amix[out]", "-map", "0:v", "-map", "[out]", "./assets/temp/audio.MTS"]
 	subprocess.call(addMusic)
 
 	f = io.open("./assets/tempfile.txt", mode="w+")

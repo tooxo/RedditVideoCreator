@@ -118,6 +118,7 @@ for text in textlist:
 
 for thread in threadlist:
 	thread.start()
+	time.sleep(0.5)
 	
 for thread in threadlist:
 	thread.join()
@@ -164,8 +165,6 @@ for x in range(0, len(linklist)):
 		modifyComment(x)
 	except:
 		break
-
-
 
 countdown(2)
 wget = ["curl", "-o", "./assets/temp/title_temp.html", "-A", "CRAwL TooxO", thread_raw]
