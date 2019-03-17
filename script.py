@@ -27,6 +27,7 @@ sox_location = data["sox_location"]
 thread_raw = data["thread"]
 magick_location = data["magick_location"]
 chrome_location = data["chrome_driver_location"]
+dark_mode = data["dark_mode"]
 
 print ("FFMPEG LOCATION: " + ffmpeg_location)
 print ("SOX LOCATION: " + sox_location)
@@ -162,14 +163,14 @@ print ("Finished downloading Comments. Going to modify.")
 
 for x in range(0, len(linklist)):
 	try:
-		modifyComment(x)
+		modifyComment(x, dark_mode)
 	except:
 		break
 
 countdown(2)
 wget = ["curl", "-o", "./assets/temp/title_temp.html", "-A", "CRAwL TooxO", thread_raw]
 subprocess.call(wget)
-modify("./assets/temp/title_temp.html", "./assets/temp/title.html")
+modify("./assets/temp/title_temp.html", "./assets/temp/title.html", dark_mode)
 
 numberlist.sort(key=int)
 numberlist = screenshot(numberlist, "./assets/temp/title.html", chrome_location)

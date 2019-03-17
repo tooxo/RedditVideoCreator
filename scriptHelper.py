@@ -8,7 +8,7 @@ import time
 import subprocess
 import random
 
-def modify(file, output):
+def modify(file, output, dark_mode):
 	print ("File: " + file + " Output: " + output)
 	parser = etree.XMLParser(recover=True)
 	f = io.open(output, mode="wb")
@@ -31,6 +31,10 @@ def modify(file, output):
 	for child in big:
 		child.getparent().remove(child)
 	big.append(test)
+	if dark_mode == "true":
+		styles = etree.Element('style')
+		styles.text = '[id="2x-container"]{ background: #1A1A1B; color: #B3B5B7 !important} h2,i,span,a {color: #B3B5B7 !important}'
+		body.append(styles)
 	f.write(lxml.html.tostring(dom))	
 	f.close()
 	os.remove(file)
@@ -54,7 +58,7 @@ def lengthSwitch(length):
 	else:
 		return "./assets/prerendered/600white.mp4"
 	
-def modifyComment(num):
+def modifyComment(num, dark_mode):
 	file = "./temp/" + str(num) + ".html"
 	output = "./screenshot/" + str(num) + ".html"
 	parser = etree.XMLParser(recover=True)
@@ -79,6 +83,10 @@ def modifyComment(num):
 	for child in big:
 		child.getparent().remove(child)
 	big.append(test)
+	if dark_mode == "true":
+		styles = etree.Element('style')
+		styles.text = '.top-level {background: #1A1A1B;} [id="2x-container"] {color: #B3B5B7 !important}'
+		body.append(styles)
 	f.write(lxml.html.tostring(dom))
 	f.close()
 	os.remove(file)
