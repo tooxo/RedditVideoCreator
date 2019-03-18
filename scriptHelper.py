@@ -33,30 +33,35 @@ def modify(file, output, dark_mode):
 	big.append(test)
 	if dark_mode == "true":
 		styles = etree.Element('style')
-		styles.text = '[id="2x-container"]{ background: #1A1A1B; color: #B3B5B7 !important} h2,i,span,a {color: #B3B5B7 !important}'
+		styles.text = '[id="2x-container"]{ background: #1A1A1B; color: #B3B5B7 !important} h2,i,span,a {color: #B3B5B7 !important} .Post {transition: none !important; -webkit-transition: none !important}'
 		body.append(styles)
 	f.write(lxml.html.tostring(dom))	
 	f.close()
 	os.remove(file)
 
-def lengthSwitch(length):
+def lengthSwitch(length, dark_mode):
+	if dark_mode == "true":
+		mode = "dark"
+	else: 
+		mode = "white"
+
 	length = float(length)
 	if length < 10.0:
-		return "./assets/prerendered/10white.mp4"
+		return "./assets/prerendered/10" + mode + ".mp4"
 	elif length < 20.0:
-		return "./assets/prerendered/20white.mp4"
+		return "./assets/prerendered/20" + mode + ".mp4"
 	elif length < 40.0:
-		return "./assets/prerendered/40white.mp4"
+		return "./assets/prerendered/40" + mode + ".mp4"
 	elif length < 60.0:
-		return "./assets/prerendered/60white.mp4"
+		return "./assets/prerendered/60" + mode + ".mp4"
 	elif length < 100.0:
-		return "./assets/prerendered/100white.mp4"
+		return "./assets/prerendered/100" + mode + ".mp4"
 	elif length < 120.0:
-		return "./assets/prerendered/120white.mp4"
+		return "./assets/prerendered/120" + mode + ".mp4"
 	elif length < 180.0:
-		return "./assets/prerendered/180white.mp4"
+		return "./assets/prerendered/180" + mode + ".mp4"
 	else:
-		return "./assets/prerendered/600white.mp4"
+		return "./assets/prerendered/600" + mode + ".mp4"
 	
 def modifyComment(num, dark_mode):
 	file = "./temp/" + str(num) + ".html"
@@ -85,15 +90,13 @@ def modifyComment(num, dark_mode):
 	big.append(test)
 	if dark_mode == "true":
 		styles = etree.Element('style')
-		styles.text = '.top-level {background: #1A1A1B;} [id="2x-container"] {color: #B3B5B7 !important}'
+		styles.text = '.top-level {background: #1A1A1B;} span,h1,h2,a,p{color: #B3B5B7 !important} .Comment {transition: none !important; -webkit-transition: none !important; border-radius: 0 !important}'
 		body.append(styles)
 	f.write(lxml.html.tostring(dom))
 	f.close()
 	os.remove(file)
 
-def screenshot(list, title, chrome_driver):
-	print ('Headless')
-	
+def screenshot(list, title, chrome_driver):	
 	chrome = chrome_driver.replace('/', '\\')
 	_start = time.time()
 	options = Options()
@@ -103,46 +106,50 @@ def screenshot(list, title, chrome_driver):
 	options.add_argument('disable-infobars')
 	options.add_argument("--disable-extensions")
 	options.add_argument("--log-level=3")
-	options.add_argument("--window-size=1920,1080")
+	options.add_argument("--window-size=2560,1440")
 	driver = webdriver.Chrome(chrome_options=options, executable_path=chrome)
+	smallenough = []
+	largerthan = []
 	for num in list:
 		driver.get(os.getcwd() + '\\screenshot\\' + num + '.html')
-		driver.execute_script("document.body.style.zoom='250%'")
-		time.sleep(0.5)
+		driver.execute_script("document.body.style.zoom='350%'")
 		fenster = driver.execute_script("return document.documentElement.clientWidth")
-		print(str(fenster))
-		if fenster < 1920:
-			if num in list: 
-				list.remove(num)
-				print ("DELETED: " + num)
-		else:
+		if fenster == 2560:
 			driver.save_screenshot(os.getcwd() + '\\screenshot\\' + num + '.png')
+			smallenough.append(num)
 			print("Done: " + num + " / " + str(len(list)))
+		else:
+			largerthan.append(num)
 	driver.get(os.getcwd() + '\\assets\\temp\\title.html')
-	driver.execute_script("document.body.style.zoom='250%'")
+	driver.execute_script("document.body.style.zoom='350%'")
 	driver.save_screenshot(os.getcwd() + '\\assets\\temp\\title.png')
 	driver.quit()
 	_end = time.time()
-	print ('Total time for headless {}'.format(_end - _start))
-	return list
+	print ('Total time for Screenshot. {}'.format(_end - _start))
+	return smallenough
 	
 def cropAndMove(magick, list, title):
 	for num in list:
-		crop = [magick, "./screenshot/" + str(num) + ".png", "-resize", "1900x", "-trim", "./assets/images/" + str(num) + ".png"]
+	#.\assets\bin\imagemagick\magick.exe .\test.png -bordercolor white -border 1x1 -trim +repage -gravity South -chop x1+0+0 +repage  .\better.png
+		crop = [magick, "./screenshot/" + num + ".png", "-resize", "1900x", "-bordercolor", "white", "-border", "1x1", "-trim", "+repage", "-gravity", "South", "-chop", "x1+0+0", "+repage", "./assets/images/" + num + ".png"]#
 		subprocess.call(crop)
 		print("Done: " + str(num) + " / " + str(len(list)))
-	crop_title = [magick, title, "-trim", "./assets/temp/title_b.png"]
-	subprocess.call(crop_title)
-	mod = [magick, "./assets/temp/title_b.png", "-bordercolor", "white", "-border", "2%x10%", "./assets/images/title.png"]
+	#crop_title = [magick, title, "-resize", "1900x", "-trim", "./assets/temp/title_b.png"]
+	#subprocess.call(crop_title)
+	mod = [magick, title, "-resize", "1900x", "-bordercolor", "white", "-border", "1x1", "-trim", "+repage", "-gravity", "South", "-chop", "x1+0+0", "+repage", "./assets/images/title.png"]
 	subprocess.call(mod)
 
 	
-def imageToVideo(ffmpeg, list, length):
+def imageToVideo(ffmpeg, list, length, dark_mode):
 	for num in list:
-		video = lengthSwitch(length[int(num)])
-		call = [ffmpeg, "-y", "-i", video, "-i", "./assets/images/" + num + ".png", "-filter_complex", "overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2", "-codec:a", "copy", "./assets/video_silent/" + num + ".mp4"]
+		video = lengthSwitch(length[int(num)], dark_mode)
+		call = [ffmpeg, "-v", "quiet", "-stats", "-y", "-i", video, "-i", "./assets/images/" + num + ".png", "-filter_complex", "overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2", "-codec:a", "copy", "./assets/video_silent/" + num + ".mp4"]
 		subprocess.call(call)
-	call = [ffmpeg, "-y", "-i", "./assets/prerendered/40white.mp4", "-i", "./assets/images/title.png", "-filter_complex", "overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2", "-codec:a", "copy", "./assets/video_silent/title.mp4"]
+	if dark_mode == "true":
+		mode = "dark"
+	else:
+		mode = "white"
+	call = [ffmpeg,  "-v", "quiet", "-stats", "-y", "-i", "./assets/prerendered/40" + mode + ".mp4", "-i", "./assets/images/title.png", "-filter_complex", "overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2", "-codec:a", "copy", "./assets/video_silent/title.mp4"]
 	subprocess.call(call)
 
 		
@@ -150,13 +157,13 @@ def addTheAudio(ffmpeg, list, audio_title, video_title):
 	for x in range(0, len(list)):
 		video = "./assets/video_silent/" + str(x) + ".mp4"
 		audio = "./assets/audio/" + str(x) + ".mp3"
-		combine = [ffmpeg, "-y", "-i", video, "-i", audio, "-shortest", "-c", "copy", "./assets/video/" + str(x) + ".mp4"]
+		combine = [ffmpeg, "-v", "quiet", "-stats", "-y", "-i", video, "-i", audio, "-shortest", "-c", "copy", "./assets/video/" + str(x) + ".mp4"]
 		subprocess.call(combine)
-		convert = [ffmpeg, "-y", "-i", "./assets/video/" + str(x) + ".mp4", "-q", "0", "./assets/video/" + str(x) + ".MTS"]
+		convert = [ffmpeg, "-v", "quiet", "-stats", "-y", "-i", "./assets/video/" + str(x) + ".mp4", "-q", "0", "./assets/video/" + str(x) + ".MTS"]
 		subprocess.call(convert)
-	combine = [ffmpeg, "-y", "-i", video_title, "-i", audio_title, "-shortest", "-c", "copy", "./assets/video/title.mp4"]
+	combine = [ffmpeg, "-v", "quiet", "-stats", "-y", "-i", video_title, "-i", audio_title, "-shortest", "-c", "copy", "./assets/video/title.mp4"]
 	subprocess.call(combine)
-	convert = [ffmpeg, "-y", "-i", "./assets/video/title.mp4", "-q", "0", "./assets/video/title.MTS"]
+	convert = [ffmpeg, "-v", "quiet", "-stats", "-y", "-i", "./assets/video/title.mp4", "-q", "0", "./assets/video/title.MTS"]
 	subprocess.call(convert)
 
 		
@@ -166,12 +173,12 @@ def renderComplete(ffmpeg, list):
 		f.write("file " + "video/" + num + ".MTS" + "\n")
 		f.write("file " + "prerendered/censor.MTS" + "\n")
 	f.close()
-	makeitgreat = [ffmpeg, "-y", "-f", "concat", "-safe", "0", "-i", "./assets/tempfile.txt", "-vcodec", "libx264", "-c", "copy", "./assets/temp/nomusic.MTS"]
+	makeitgreat = [ffmpeg, "-v", "quiet", "-stats", "-y", "-f", "concat", "-safe", "0", "-i", "./assets/tempfile.txt", "-vcodec", "libx264", "-c", "copy", "./assets/temp/nomusic.MTS"]
 	subprocess.call(makeitgreat)
 	
 def addMusicAndOutro(ffmpeg):
 	musicToAdd = "./assets/music/music" + str(random.randrange(7)) + ".mp3"
-	addMusic = [ffmpeg, "-y", "-i", "./assets/temp/nomusic.MTS", "-i", musicToAdd, "-shortest", "-filter_complex", "[0:a]amix[out]", "-map", "0:v", "-map", "[out]", "./assets/temp/audio.MTS"]
+	addMusic = [ffmpeg, "-y", "-i", "./assets/temp/nomusic.MTS", "-i", musicToAdd, "-b:v", "4M", "-shortest", "-filter_complex", "[0:a]amix[out]", "-map", "0:v", "-map", "[out]", "./assets/temp/audio.MTS"]
 	subprocess.call(addMusic)
 
 	f = io.open("./assets/tempfile.txt", mode="w+")
@@ -181,7 +188,7 @@ def addMusicAndOutro(ffmpeg):
 		f.write("file prerendered/outro.MTS\n")
 	f.close()
 	
-	finishup = [ffmpeg, "-y", "-f", "concat", "-safe", "0", "-i", "./assets/tempfile.txt", "-vcodec", "libx264", "-c", "copy", "./output/video.MTS"]
+	finishup = [ffmpeg, "-v", "quiet", "-stats", "-y", "-f", "concat", "-safe", "0", "-i", "./assets/tempfile.txt", "-vcodec", "libx264", "-c", "copy", "./output/video.MTS"]
 	subprocess.call(finishup)
 	
 def cleanUP():

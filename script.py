@@ -130,9 +130,7 @@ for numb in numberlist:
 	check_length = [sox_location, "--i", "-D", "./assets/audio/" + numb + "_a.mp3"]
 	length = subprocess.check_output(check_length)
 	lengthlist.append(length.decode('utf-8'))
-	
-print (lengthlist)
-	
+		
 	
 _start = time.time()
 c = 0
@@ -175,7 +173,7 @@ modify("./assets/temp/title_temp.html", "./assets/temp/title.html", dark_mode)
 numberlist.sort(key=int)
 numberlist = screenshot(numberlist, "./assets/temp/title.html", chrome_location)
 cropAndMove(magick_location, numberlist, "./assets/temp/title.png")
-imageToVideo(ffmpeg_location, numberlist, lengthlist)
+imageToVideo(ffmpeg_location, numberlist, lengthlist, dark_mode)
 addTheAudio(ffmpeg_location, numberlist, "./assets/audio/title.mp3", "./assets/video_silent/title.mp4")
 renderComplete(ffmpeg_location, numberlist)
 
