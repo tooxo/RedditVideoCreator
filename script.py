@@ -28,11 +28,12 @@ thread_raw = data["thread"]
 magick_location = data["magick_location"]
 chrome_location = data["chrome_driver_location"]
 dark_mode = data["dark_mode"]
+shuffle = data["shuffle"]
 
 print ("FFMPEG LOCATION: " + ffmpeg_location)
 print ("SOX LOCATION: " + sox_location)
 print ("THREAD URL: " + thread_raw)
-print ("MAGICK LOCATION" + magick_location)
+print ("MAGICK LOCATION: " + magick_location)
 		
 if not thread_raw.endswith("/"):
 	thread = thread_raw + "/.json"
@@ -60,11 +61,23 @@ for comment in comments:
 	try:
 		permalink = "https://www.reddit.com" + comment["data"]["permalink"]
 		linklist.append(permalink)
-		body = comment["data"]["body"]
-		body = body.replace("&amp;#x200B;", "")
-		textlist.append(body)
 	except:
-		continue
+		break
+	
+	body = comment["data"]["body"]
+		
+	try:
+		body = body.replace("&amp;#x200B;", "")
+	except:
+		time.sleep(0)
+
+	try:
+		body = body.replace("&amp", "")
+	except:
+		time.sleep(0)
+	
+	textlist.append(body)
+
 
 print ("Length: " + str(len(linklist)))
 
@@ -81,6 +94,11 @@ os.remove("./test.mp3")
 
 lengthlist = []	
 threadlist = []
+
+titlefolder = stringTitle(title)[:20]
+
+if not os.path.exists(("./output/" + titlefolder)):
+	os.mkdir("./output/" + titlefolder)
 
 if use == "main":
 	voice = ["./assets/voice.exe", "-n", "ScanSoft Daniel_Full_22kHz", "--khz", "48", "-o", "./assets/audio/" + "title" + ".wav", title]
@@ -131,16 +149,15 @@ for numb in numberlist:
 	length = subprocess.check_output(check_length)
 	lengthlist.append(length.decode('utf-8'))
 		
-	
 _start = time.time()
 c = 0
 threadlist = []
 
 def downloadComments(link, c):
-	wget = ["curl",  "-o", "temp/" + str(c) + ".html", "-A", "CraWlER bY ToXoo", link]
+	wget = ["curl", "--silent", "-o", "temp/" + str(c) + ".html", "-A", "CraWlER bY ToXoo", link]
 	subprocess.call(wget)
 	print ("                                                     ", end="\r")
-	print ("Done: Thread " + str(o), end="\r")
+	print ("Done: CommentThread " + str(o), end="\r")
 	
 
 for link in linklist:
@@ -166,7 +183,7 @@ for x in range(0, len(linklist)):
 		break
 
 countdown(2)
-wget = ["curl", "-o", "./assets/temp/title_temp.html", "-A", "CRAwL TooxO", thread_raw]
+wget = ["curl", "--silent", "-o", "./assets/temp/title_temp.html", "-A", "CRAwL TooxO", thread_raw]
 subprocess.call(wget)
 modify("./assets/temp/title_temp.html", "./assets/temp/title.html", dark_mode)
 
@@ -175,9 +192,11 @@ numberlist = screenshot(numberlist, "./assets/temp/title.html", chrome_location)
 cropAndMove(magick_location, numberlist, "./assets/temp/title.png")
 imageToVideo(ffmpeg_location, numberlist, lengthlist, dark_mode)
 addTheAudio(ffmpeg_location, numberlist, "./assets/audio/title.mp3", "./assets/video_silent/title.mp4")
-renderComplete(ffmpeg_location, numberlist)
+renderComplete(ffmpeg_location, numberlist, shuffle)
 
-addMusicAndOutro(ffmpeg_location)
+addMusicAndOutro(ffmpeg_location, titlefolder)
+
+createDescription(linklist, titlefolder, thread_raw, title)
 
 print("CLEANING UP IN 10")
 countdown(9)

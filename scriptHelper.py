@@ -130,12 +130,9 @@ def screenshot(list, title, chrome_driver):
 	
 def cropAndMove(magick, list, title):
 	for num in list:
-	#.\assets\bin\imagemagick\magick.exe .\test.png -bordercolor white -border 1x1 -trim +repage -gravity South -chop x1+0+0 +repage  .\better.png
 		crop = [magick, "./screenshot/" + num + ".png", "-resize", "1900x", "-bordercolor", "white", "-border", "1x1", "-trim", "+repage", "-gravity", "South", "-chop", "x1+0+0", "+repage", "./assets/images/" + num + ".png"]#
 		subprocess.call(crop)
 		print("Done: " + str(num) + " / " + str(len(list)))
-	#crop_title = [magick, title, "-resize", "1900x", "-trim", "./assets/temp/title_b.png"]
-	#subprocess.call(crop_title)
 	mod = [magick, title, "-resize", "1900x", "-bordercolor", "white", "-border", "1x1", "-trim", "+repage", "-gravity", "South", "-chop", "x1+0+0", "+repage", "./assets/images/title.png"]
 	subprocess.call(mod)
 
@@ -166,8 +163,13 @@ def addTheAudio(ffmpeg, list, audio_title, video_title):
 	convert = [ffmpeg, "-v", "quiet", "-stats", "-y", "-i", "./assets/video/title.mp4", "-q", "0", "./assets/video/title.MTS"]
 	subprocess.call(convert)
 
+def stringTitle(string):
+	result = ''.join([i for i in string if (i.isalnum() or i == " ")])
+	return result
 		
-def renderComplete(ffmpeg, list):
+def renderComplete(ffmpeg, list, isshuffle):
+	if isshuffle == "true":
+		random.shuffle(list)
 	f = io.open("./assets/tempfile.txt", mode="w+")
 	for num in list:
 		f.write("file " + "video/" + num + ".MTS" + "\n")
@@ -176,9 +178,25 @@ def renderComplete(ffmpeg, list):
 	makeitgreat = [ffmpeg, "-v", "quiet", "-stats", "-y", "-f", "concat", "-safe", "0", "-i", "./assets/tempfile.txt", "-vcodec", "libx264", "-c", "copy", "./assets/temp/nomusic.MTS"]
 	subprocess.call(makeitgreat)
 	
-def addMusicAndOutro(ffmpeg):
+def createDescription(list, folder, threadlink, title):
+	f = io.open("./output/" + folder + "/description.txt", "w+")
+	
+	f.write(title + "\n\n")
+	f.write("im a bot beep boop, crazy, right?\n")
+	f.write("this video is part of a proof of concept channel for the script that creates this videos fully automatic. check it out here: https://github.com/tooxo/RedditVideoCreator\n")
+	f.write("\n\n")
+	f.write("Links to original posts: \n")
+	f.write("Original Thread: " + threadlink + "\n")
+	f.write("\n")
+	f.write("Comments: \n")
+	for thread in list:
+		f.write(thread + "\n")
+	f.close()
+		
+		
+def addMusicAndOutro(ffmpeg, folder):
 	musicToAdd = "./assets/music/music" + str(random.randrange(7)) + ".mp3"
-	addMusic = [ffmpeg, "-y", "-i", "./assets/temp/nomusic.MTS", "-i", musicToAdd, "-b:v", "4M", "-shortest", "-filter_complex", "[0:a]amix[out]", "-map", "0:v", "-map", "[out]", "./assets/temp/audio.MTS"]
+	addMusic = [ffmpeg, "-v", "quiet", "-stats", "-y", "-i", "./assets/temp/nomusic.MTS", "-i", musicToAdd, "-b:v", "4M", "-shortest", "-filter_complex", "[0:a]amix[out]", "-map", "0:v", "-map", "[out]", "./assets/temp/audio.MTS"]
 	subprocess.call(addMusic)
 
 	f = io.open("./assets/tempfile.txt", mode="w+")
@@ -188,7 +206,11 @@ def addMusicAndOutro(ffmpeg):
 		f.write("file prerendered/outro.MTS\n")
 	f.close()
 	
-	finishup = [ffmpeg, "-v", "quiet", "-stats", "-y", "-f", "concat", "-safe", "0", "-i", "./assets/tempfile.txt", "-vcodec", "libx264", "-c", "copy", "./output/video.MTS"]
+	#Creating Thumbnail
+	thumb = [ffmpeg, "-v", "quiet", "-stats", "-i", "./assets/video/title.MTS", "-vf", 'select=eq(n\,0)', "-vframes", "1", "./output/" + folder + "/thumbnail.png"]
+	subprocess.call(thumb)
+	
+	finishup = [ffmpeg, "-v", "quiet", "-stats", "-y", "-f", "concat", "-safe", "0", "-i", "./assets/tempfile.txt", "-vcodec", "libx264", "-c", "copy", "./output/" + folder + "/" + "video.MTS"]
 	subprocess.call(finishup)
 	
 def cleanUP():
