@@ -30,16 +30,14 @@ chrome_location = data["chrome_driver_location"]
 dark_mode = data["dark_mode"]
 shuffle = data["shuffle"]
 
+collection = dict()
+
 print ("FFMPEG LOCATION: " + ffmpeg_location)
 print ("SOX LOCATION: " + sox_location)
 print ("THREAD URL: " + thread_raw)
 print ("MAGICK LOCATION: " + magick_location)
 		
-if not thread_raw.endswith("/"):
-	thread = thread_raw + "/.json"
-else:
-	thread = thread_raw + ".json"
-print ("Using: " + thread)
+thread = thread_raw + ".json"
 
 request = urllib.request.Request(
 	thread,
@@ -53,14 +51,15 @@ callback = urllib.request.urlopen(request).read()
 json = json.loads(callback)
 title = json[0]["data"]["children"][0]["data"]["title"]
 	
-comments = json[1]["data"]["children"]
-linklist = []
-textlist = []
-numberlist = []
-for comment in comments: 
+index = 0
+
+for comment in json[1]["data"]["children"]: 
+	if comment["kind"] == "more":
+		break
+	collection[index] = {}
+	collection[index]["ID"] = str(index)
 	try:
-		permalink = "https://www.reddit.com" + comment["data"]["permalink"]
-		linklist.append(permalink)
+		collection[index]["LINK"] = "https://www.reddit.com" + comment["data"]["permalink"]
 	except:
 		break
 	
@@ -68,18 +67,20 @@ for comment in comments:
 		
 	try:
 		body = body.replace("&amp;#x200B;", "")
-	except:
-		time.sleep(0)
+	except Exception:
+		pass
 
 	try:
 		body = body.replace("&amp", "")
-	except:
-		time.sleep(0)
+	except Exception:
+		pass
 	
-	textlist.append(body)
+	collection[index]["TEXT"] = body
+	collection[index]["AUTHOR"] = comment["data"]["author"]
+	index = index+1
 
 
-print ("Length: " + str(len(linklist)))
+print ("Length: " + str(len(collection)))
 
 o = 0
 
@@ -125,15 +126,12 @@ def voiceThread(text, sox_location, o):
 	
 	padding = [sox_location, "--norm", "./assets/audio/" + str(o) + "_a.mp3", "./assets/audio/" + str(o) + ".mp3", "pad", "0", "0.5"]
 	subprocess.call(padding)
-	
-	numberlist.append(str(o))
 	print ("                                                     ", end="\r")
 	print ("Done: Thread " + str(o), end="\r")
 	
-for text in textlist:
-	th = threading.Thread(target=voiceThread, args=(text,sox_location,o))
+for comment in collection:
+	th = threading.Thread(target=voiceThread, args=(collection[comment]["TEXT"], sox_location,collection[comment]["ID"]))
 	threadlist.append(th)
-	o = o + 1
 
 for thread in threadlist:
 	thread.start()
@@ -142,26 +140,24 @@ for thread in threadlist:
 for thread in threadlist:
 	thread.join()
 	
-numberlist.sort(key=int)
 	
-for numb in numberlist:
-	check_length = [sox_location, "--i", "-D", "./assets/audio/" + numb + "_a.mp3"]
+for comment in collection:
+	check_length = [sox_location, "--i", "-D", "./assets/audio/" + collection[comment]["ID"] + "_a.mp3"]
 	length = subprocess.check_output(check_length)
-	lengthlist.append(length.decode('utf-8'))
-		
-_start = time.time()
-c = 0
-threadlist = []
+	collection[comment]["LENGTH"] = length.decode('utf-8')	
 
 def downloadComments(link, c):
 	wget = ["curl", "--silent", "-o", "temp/" + str(c) + ".html", "-A", "CraWlER bY ToXoo", link]
 	subprocess.call(wget)
 	print ("                                                     ", end="\r")
-	print ("Done: CommentThread " + str(o), end="\r")
+	print ("Done: CommentThread " + str(c), end="\r")
 	
+_start = time.time()
+c = 0
+threadlist = []
 
-for link in linklist:
-	th = threading.Thread(target=downloadComments, args=(link, c))
+for comment in collection:
+	th = threading.Thread(target=downloadComments, args=(collection[comment]["LINK"], c))
 	threadlist.append(th)
 	c = c + 1
 
@@ -176,27 +172,22 @@ _end = time.time()
 print ('Total Time for Comment Downloading: {}'.format(_end - _start))
 print ("Finished downloading Comments. Going to modify.")
 
-for x in range(0, len(linklist)):
-	try:
-		modifyComment(x, dark_mode)
-	except:
-		break
+for x in collection:
+		modifyComment(collection[x]["ID"], dark_mode)
 
 countdown(2)
 wget = ["curl", "--silent", "-o", "./assets/temp/title_temp.html", "-A", "CRAwL TooxO", thread_raw]
 subprocess.call(wget)
 modify("./assets/temp/title_temp.html", "./assets/temp/title.html", dark_mode)
 
-numberlist.sort(key=int)
-numberlist = screenshot(numberlist, "./assets/temp/title.html", chrome_location)
-cropAndMove(magick_location, numberlist, "./assets/temp/title.png")
-imageToVideo(ffmpeg_location, numberlist, lengthlist, dark_mode)
-addTheAudio(ffmpeg_location, numberlist, "./assets/audio/title.mp3", "./assets/video_silent/title.mp4")
-renderComplete(ffmpeg_location, numberlist, shuffle)
+collection = screenshot(collection, "./assets/temp/title.html", chrome_location)
+cropAndMove(magick_location, collection, "./assets/temp/title.png")
+imageToVideo(ffmpeg_location, collection, lengthlist, dark_mode)
+addTheAudio(ffmpeg_location, collection, "./assets/audio/title.mp3", "./assets/video_silent/title.mp4")
+renderComplete(ffmpeg_location, collection, shuffle)
 
 addMusicAndOutro(ffmpeg_location, titlefolder)
-
-createDescription(linklist, titlefolder, thread_raw, title)
+createDescription(collection, titlefolder, thread_raw, title)
 
 print("CLEANING UP IN 10")
 countdown(9)

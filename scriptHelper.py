@@ -108,39 +108,39 @@ def screenshot(list, title, chrome_driver):
 	options.add_argument("--log-level=3")
 	options.add_argument("--window-size=2560,1440")
 	driver = webdriver.Chrome(chrome_options=options, executable_path=chrome)
-	smallenough = []
-	largerthan = []
-	for num in list:
-		driver.get(os.getcwd() + '\\screenshot\\' + num + '.html')
+	removelist = []
+	for comment in list:
+		driver.get(os.getcwd() + '\\screenshot\\' + list[comment]["ID"] + '.html')
 		driver.execute_script("document.body.style.zoom='350%'")
-		fenster = driver.execute_script("return document.documentElement.clientWidth")
-		if fenster == 2560:
-			driver.save_screenshot(os.getcwd() + '\\screenshot\\' + num + '.png')
-			smallenough.append(num)
-			print("Done: " + num + " / " + str(len(list)))
+		if driver.execute_script("return document.documentElement.clientWidth") == 2560:
+			driver.save_screenshot(os.getcwd() + '\\screenshot\\' + list[comment]["ID"] + '.png')
+			print("Done: " + list[comment]["ID"] + " / " + str(len(list)))
 		else:
-			largerthan.append(num)
+			removelist.append(comment)
 	driver.get(os.getcwd() + '\\assets\\temp\\title.html')
 	driver.execute_script("document.body.style.zoom='350%'")
 	driver.save_screenshot(os.getcwd() + '\\assets\\temp\\title.png')
 	driver.quit()
+	
+	for i in removelist:
+		del list[i]
 	_end = time.time()
 	print ('Total time for Screenshot. {}'.format(_end - _start))
-	return smallenough
+	return list
 	
 def cropAndMove(magick, list, title):
-	for num in list:
-		crop = [magick, "./screenshot/" + num + ".png", "-resize", "1900x", "-bordercolor", "white", "-border", "1x1", "-trim", "+repage", "-gravity", "South", "-chop", "x1+0+0", "+repage", "./assets/images/" + num + ".png"]#
+	for comment in list:
+		crop = [magick, "./screenshot/" + list[comment]["ID"] + ".png", "-resize", "1900x", "-bordercolor", "white", "-border", "1x1", "-trim", "+repage", "-gravity", "South", "-chop", "x1+0+0", "+repage", "./assets/images/" + list[comment]["ID"] + ".png"]
 		subprocess.call(crop)
-		print("Done: " + str(num) + " / " + str(len(list)))
+		print("Done: " + list[comment]["ID"] + " / " + str(len(list)))
 	mod = [magick, title, "-resize", "1900x", "-bordercolor", "white", "-border", "1x1", "-trim", "+repage", "-gravity", "South", "-chop", "x1+0+0", "+repage", "./assets/images/title.png"]
 	subprocess.call(mod)
 
 	
 def imageToVideo(ffmpeg, list, length, dark_mode):
-	for num in list:
-		video = lengthSwitch(length[int(num)], dark_mode)
-		call = [ffmpeg, "-v", "quiet", "-stats", "-y", "-i", video, "-i", "./assets/images/" + num + ".png", "-filter_complex", "overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2", "-codec:a", "copy", "./assets/video_silent/" + num + ".mp4"]
+	for comment in list:
+		video = lengthSwitch(list[comment]["LENGTH"], dark_mode)
+		call = [ffmpeg, "-v", "quiet", "-stats", "-y", "-i", video, "-i", "./assets/images/" + list[comment]["ID"] + ".png", "-filter_complex", "overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2", "-codec:a", "copy", "./assets/video_silent/" + list[comment]["ID"] + ".mp4"]
 		subprocess.call(call)
 	if dark_mode == "true":
 		mode = "dark"
@@ -151,12 +151,12 @@ def imageToVideo(ffmpeg, list, length, dark_mode):
 
 		
 def addTheAudio(ffmpeg, list, audio_title, video_title):
-	for x in range(0, len(list)):
-		video = "./assets/video_silent/" + str(x) + ".mp4"
-		audio = "./assets/audio/" + str(x) + ".mp3"
-		combine = [ffmpeg, "-v", "quiet", "-stats", "-y", "-i", video, "-i", audio, "-shortest", "-c", "copy", "./assets/video/" + str(x) + ".mp4"]
+	for comment in list:
+		video = "./assets/video_silent/" + list[comment]["ID"] + ".mp4"
+		audio = "./assets/audio/" + list[comment]["ID"] + ".mp3"
+		combine = [ffmpeg, "-v", "quiet", "-stats", "-y", "-i", video, "-i", audio, "-shortest", "-c", "copy", "./assets/video/" + list[comment]["ID"] + ".mp4"]
 		subprocess.call(combine)
-		convert = [ffmpeg, "-v", "quiet", "-stats", "-y", "-i", "./assets/video/" + str(x) + ".mp4", "-q", "0", "./assets/video/" + str(x) + ".MTS"]
+		convert = [ffmpeg, "-v", "quiet", "-stats", "-y", "-i", "./assets/video/" + list[comment]["ID"] + ".mp4", "-q", "0", "./assets/video/" + list[comment]["ID"] + ".MTS"]
 		subprocess.call(convert)
 	combine = [ffmpeg, "-v", "quiet", "-stats", "-y", "-i", video_title, "-i", audio_title, "-shortest", "-c", "copy", "./assets/video/title.mp4"]
 	subprocess.call(combine)
@@ -168,12 +168,20 @@ def stringTitle(string):
 	return result
 		
 def renderComplete(ffmpeg, list, isshuffle):
-	if isshuffle == "true":
-		random.shuffle(list)
 	f = io.open("./assets/tempfile.txt", mode="w+")
-	for num in list:
-		f.write("file " + "video/" + num + ".MTS" + "\n")
-		f.write("file " + "prerendered/censor.MTS" + "\n")
+	if isshuffle == "true":
+		t = []
+		for x in list:
+			t.append(x)
+		random.shuffle(t)
+		for b in t:
+			f.write("file " + "video/" + str(b) + ".MTS" + "\n")
+			f.write("file " + "prerendered/censor.MTS" + "\n")
+	else:
+		for comment in list:
+			f.write("file " + "video/" + list[comment]["ID"] + ".MTS\n")
+			f.write("file " + "prerendered/censor.MTS" + "\n")
+	
 	f.close()
 	makeitgreat = [ffmpeg, "-v", "quiet", "-stats", "-y", "-f", "concat", "-safe", "0", "-i", "./assets/tempfile.txt", "-vcodec", "libx264", "-c", "copy", "./assets/temp/nomusic.MTS"]
 	subprocess.call(makeitgreat)
@@ -188,9 +196,9 @@ def createDescription(list, folder, threadlink, title):
 	f.write("Links to original posts: \n")
 	f.write("Original Thread: " + threadlink + "\n")
 	f.write("\n")
-	f.write("Comments: \n")
-	for thread in list:
-		f.write(thread + "\n")
+	f.write("Comments by: \n")
+	for comment in list:
+		f.write(list[comment]["AUTHOR"] + "\n")
 	f.close()
 		
 		
