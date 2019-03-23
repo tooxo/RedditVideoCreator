@@ -35,14 +35,14 @@ def modify(file, output, dark_mode):
 		styles = etree.Element('style')
 		styles.text = '[id="2x-container"]{ background: #1A1A1B; color: #B3B5B7 !important} h2,i,span,a {color: #B3B5B7 !important} .Post {transition: none !important; -webkit-transition: none !important}'
 		body.append(styles)
-	f.write(lxml.html.tostring(dom))	
+	f.write(lxml.html.tostring(dom))
 	f.close()
 	os.remove(file)
 
 def lengthSwitch(length, dark_mode):
 	if dark_mode == "true":
 		mode = "dark"
-	else: 
+	else:
 		mode = "white"
 
 	length = float(length)
@@ -62,7 +62,7 @@ def lengthSwitch(length, dark_mode):
 		return "./assets/prerendered/180" + mode + ".mp4"
 	else:
 		return "./assets/prerendered/600" + mode + ".mp4"
-	
+
 def modifyComment(num, dark_mode):
 	file = "./temp/" + str(num) + ".html"
 	output = "./screenshot/" + str(num) + ".html"
@@ -96,22 +96,22 @@ def modifyComment(num, dark_mode):
 	f.close()
 	os.remove(file)
 
-def screenshot(list, title, chrome_driver):	
+def screenshot(list, title, chrome_driver):
 	chrome = chrome_driver.replace('/', '\\')
 	_start = time.time()
 	options = Options()
-	options.add_argument("--headless") 
-	options.add_argument('--no-sandbox') 
+	options.add_argument("--headless")
+	options.add_argument('--no-sandbox')
 	options.add_argument('start-maximized')
 	options.add_argument('disable-infobars')
 	options.add_argument("--disable-extensions")
 	options.add_argument("--log-level=3")
-	options.add_argument("--window-size=2560,1440")
+	options.add_argument("--window-size=1920,1080") #1920 1080 250%,
 	driver = webdriver.Chrome(chrome_options=options, executable_path=chrome)
 	removelist = []
 	for comment in list:
 		driver.get(os.getcwd() + '\\screenshot\\' + list[comment]["ID"] + '.html')
-		driver.execute_script("document.body.style.zoom='350%'")
+		driver.execute_script("document.body.style.zoom='250%'")
 		if driver.execute_script("return document.documentElement.clientWidth") == 2560:
 			driver.save_screenshot(os.getcwd() + '\\screenshot\\' + list[comment]["ID"] + '.png')
 			print("Done: " + list[comment]["ID"] + " / " + str(len(list)))
@@ -121,13 +121,13 @@ def screenshot(list, title, chrome_driver):
 	driver.execute_script("document.body.style.zoom='350%'")
 	driver.save_screenshot(os.getcwd() + '\\assets\\temp\\title.png')
 	driver.quit()
-	
+
 	for i in removelist:
 		del list[i]
 	_end = time.time()
 	print ('Total time for Screenshot. {}'.format(_end - _start))
 	return list
-	
+
 def cropAndMove(magick, list, title):
 	for comment in list:
 		crop = [magick, "./screenshot/" + list[comment]["ID"] + ".png", "-resize", "1900x", "-bordercolor", "white", "-border", "1x1", "-trim", "+repage", "-gravity", "South", "-chop", "x1+0+0", "+repage", "./assets/images/" + list[comment]["ID"] + ".png"]
@@ -136,7 +136,7 @@ def cropAndMove(magick, list, title):
 	mod = [magick, title, "-resize", "1900x", "-bordercolor", "white", "-border", "1x1", "-trim", "+repage", "-gravity", "South", "-chop", "x1+0+0", "+repage", "./assets/images/title.png"]
 	subprocess.call(mod)
 
-	
+
 def imageToVideo(ffmpeg, list, length, dark_mode):
 	for comment in list:
 		video = lengthSwitch(list[comment]["LENGTH"], dark_mode)
@@ -149,7 +149,7 @@ def imageToVideo(ffmpeg, list, length, dark_mode):
 	call = [ffmpeg,  "-v", "quiet", "-stats", "-y", "-i", "./assets/prerendered/40" + mode + ".mp4", "-i", "./assets/images/title.png", "-filter_complex", "overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2", "-codec:a", "copy", "./assets/video_silent/title.mp4"]
 	subprocess.call(call)
 
-		
+
 def addTheAudio(ffmpeg, list, audio_title, video_title):
 	for comment in list:
 		video = "./assets/video_silent/" + list[comment]["ID"] + ".mp4"
@@ -166,7 +166,7 @@ def addTheAudio(ffmpeg, list, audio_title, video_title):
 def stringTitle(string):
 	result = ''.join([i for i in string if (i.isalnum() or i == " ")])
 	return result
-		
+
 def renderComplete(ffmpeg, list, isshuffle):
 	f = io.open("./assets/tempfile.txt", mode="w+")
 	if isshuffle == "true":
@@ -181,14 +181,14 @@ def renderComplete(ffmpeg, list, isshuffle):
 		for comment in list:
 			f.write("file " + "video/" + list[comment]["ID"] + ".MTS\n")
 			f.write("file " + "prerendered/censor.MTS" + "\n")
-	
+
 	f.close()
 	makeitgreat = [ffmpeg, "-v", "quiet", "-stats", "-y", "-f", "concat", "-safe", "0", "-i", "./assets/tempfile.txt", "-vcodec", "libx264", "-c", "copy", "./assets/temp/nomusic.MTS"]
 	subprocess.call(makeitgreat)
-	
+
 def createDescription(list, folder, threadlink, title):
 	f = io.open("./output/" + folder + "/description.txt", "w+")
-	
+
 	f.write(title + "\n\n")
 	f.write("im a bot beep boop, crazy, right?\n")
 	f.write("this video is part of a proof of concept channel for the script that creates this videos fully automatic. check it out here: https://github.com/tooxo/RedditVideoCreator\n")
@@ -200,8 +200,8 @@ def createDescription(list, folder, threadlink, title):
 	for comment in list:
 		f.write(list[comment]["AUTHOR"] + "\n")
 	f.close()
-		
-		
+
+
 def addMusicAndOutro(ffmpeg, folder):
 	musicToAdd = "./assets/music/music" + str(random.randrange(7)) + ".mp3"
 	addMusic = [ffmpeg, "-v", "quiet", "-stats", "-y", "-i", "./assets/temp/nomusic.MTS", "-i", musicToAdd, "-b:v", "4M", "-shortest", "-filter_complex", "[0:a]amix[out]", "-map", "0:v", "-map", "[out]", "./assets/temp/audio.MTS"]
@@ -213,14 +213,14 @@ def addMusicAndOutro(ffmpeg, folder):
 	if os.path.isfile("./assets/prerendered/outro.MTS"):
 		f.write("file prerendered/outro.MTS\n")
 	f.close()
-	
+
 	#Creating Thumbnail
 	thumb = [ffmpeg, "-v", "quiet", "-stats", "-i", "./assets/video/title.MTS", "-vf", 'select=eq(n\,0)', "-vframes", "1", "./output/" + folder + "/thumbnail.png"]
 	subprocess.call(thumb)
-	
+
 	finishup = [ffmpeg, "-v", "quiet", "-stats", "-y", "-f", "concat", "-safe", "0", "-i", "./assets/tempfile.txt", "-vcodec", "libx264", "-c", "copy", "./output/" + folder + "/" + "video.MTS"]
 	subprocess.call(finishup)
-	
+
 def cleanUP():
 	folder_to_clean = ["./temp/", "./screenshot/", "./assets/audio/", "./assets/images/", "./assets/temp/", "./assets/video/", "./assets/video_silent/"]
 	for folder in folder_to_clean:
