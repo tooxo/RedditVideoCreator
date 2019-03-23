@@ -3,7 +3,7 @@
 	"_comment": "Your Thread URL goes above",
 	"ffmpeg_location": "./assets/bin/ffmpeg/ffmpeg.exe",
 	"sox_location": "./assets/bin/sox/sox.exe",
-	"magick_location": "./assets/bin/imagemagick/magick.exe",
+	"magick_location": "./assets/bin/imagemagick/convert.exe",
 	"chrome_driver_location": "./assets/bin/chromedriver/chromedriver.exe",
 	"dark_mode": "true",
 	"shuffle": "true"
