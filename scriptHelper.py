@@ -137,7 +137,7 @@ def cropAndMove(magick, list, title):
 	subprocess.call(mod)
 
 
-def imageToVideo(ffmpeg, list, length, dark_mode):
+def imageToVideo(ffmpeg, list, dark_mode):
 	for comment in list:
 		video = lengthSwitch(list[comment]["LENGTH"], dark_mode)
 		call = [ffmpeg, "-v", "quiet", "-stats", "-y", "-i", video, "-i", "./assets/images/" + list[comment]["ID"] + ".png", "-filter_complex", "overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2", "-codec:a", "copy", "./assets/video_silent/" + list[comment]["ID"] + ".mp4"]
