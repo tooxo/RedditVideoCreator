@@ -9,7 +9,7 @@ url_sox = "https://downloads.sourceforge.net/project/sox/sox/14.4.2/sox-14.4.2-w
 url_imagemagick = "ftp://ftp.imagemagick.org/pub/ImageMagick/binaries/ImageMagick-6.9.10-34-portable-Q16-x64.zip" #yes
 url_ffmpeg = "https://github.com/vot/ffbinaries-prebuilt/releases/download/v4.1/ffmpeg-4.1-win-64.zip" #yes
 url_voice = "https://drive.google.com/uc?authuser=0&id=15j8nEpu3D4ezbTy2Hz_Tr7PjOYKPPKFM&export=download" #yes
-url_selenium = "https://chromedriver.storage.googleapis.com/74.0.3729.6/chromedriver_win32.zip" #yes
+url_selenium = "https://chromedriver.storage.googleapis.com/73.0.3683.68/chromedriver_win32.zip" #yes
 url_lame = "https://drive.google.com/uc?authuser=0&id=1AIDh9smIQrtDzXQyjEnjTLZd3c0ca9pG&export=download" #yes
 
 user_agents = [ 'Mozilla/5.0 (Windows; U; Windows NT 5.1; it; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11', 'Opera/9.25 (Windows NT 5.1; U; en)', 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322; .NET CLR 2.0.50727)', 'Mozilla/5.0 (compatible; Konqueror/3.5; Linux) KHTML/3.5.5 (like Gecko) (Kubuntu)', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070731 Ubuntu/dapper-security Firefox/1.5.0.12', 'Lynx/2.8.5rel.1 libwww-FM/2.14 SSL-MM/1.4.1 GNUTLS/1.2.9']
