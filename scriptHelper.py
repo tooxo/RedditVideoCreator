@@ -137,7 +137,7 @@ def cropAndMove(magick, list, title):
 	subprocess.call(mod)
 
 
-def imageToVideo(ffmpeg, list, length, dark_mode):
+def imageToVideo(ffmpeg, list, dark_mode):
 	for comment in list:
 		video = lengthSwitch(list[comment]["LENGTH"], dark_mode)
 		call = [ffmpeg, "-v", "quiet", "-stats", "-y", "-i", video, "-i", "./assets/images/" + list[comment]["ID"] + ".png", "-filter_complex", "overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2", "-codec:a", "copy", "./assets/video_silent/" + list[comment]["ID"] + ".mp4"]
@@ -215,7 +215,7 @@ def addMusicAndOutro(ffmpeg, folder):
 	f.close()
 
 	#Creating Thumbnail
-	thumb = [ffmpeg, "-v", "quiet", "-stats", "-i", "./assets/video/title.MTS", "-vf", 'select=eq(n\,0)', "-vframes", "1", "./output/" + folder + "/thumbnail.png"]
+	thumb = [ffmpeg, "-v", "quiet", "-stats", "-y", "-i", "./assets/video/title.MTS", "-vf", 'select=eq(n\,0)', "-vframes", "1", "./output/" + folder + "/thumbnail.png"]
 	subprocess.call(thumb)
 
 	finishup = [ffmpeg, "-v", "quiet", "-stats", "-y", "-f", "concat", "-safe", "0", "-i", "./assets/tempfile.txt", "-vcodec", "libx264", "-c", "copy", "./output/" + folder + "/" + "video.MTS"]

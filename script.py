@@ -1,4 +1,4 @@
-import json
+import json as JSON
 import time
 import subprocess
 import urllib.request, urllib.parse
@@ -14,7 +14,7 @@ def countdown(time_d):
 		time_d = time_d - 1
 
 with open('configuration.json') as f:
-	data = json.load(f)
+	data = JSON.load(f)
 
 ffmpeg_location = data["ffmpeg_location"]
 sox_location = data["sox_location"]
@@ -42,7 +42,7 @@ request = urllib.request.Request(
 )
 
 callback = urllib.request.urlopen(request).read()
-json = json.loads(callback)
+json = JSON.loads(callback)
 title = json[0]["data"]["children"][0]["data"]["title"]
 
 index = 0
@@ -78,16 +78,6 @@ print ("Length: " + str(len(collection)))
 
 o = 0
 
-voice_check = ["./assets/voice.exe", "-n", "ScanSoft Daniel_Full_22kHz", "-o", "./test.mp3", "a"]
-output = subprocess.check_output(voice_check)
-if "Invalid" in str(output):
-	use = "backup"
-else:
-	use = "main"
-
-os.remove("./test.mp3")
-
-lengthlist = []
 threadlist = []
 
 titlefolder = stringTitle(title)[:20]
@@ -98,10 +88,7 @@ if not os.path.exists(("./output/" + titlefolder)):
 if titlefolder.endswith(" "):
 	titlefolder = titlefolder[:19]
 
-if use == "main":
-	voice = ["./assets/voice.exe", "-n", "ScanSoft Daniel_Full_22kHz", "--khz", "48", "-o", "./assets/audio/" + "title" + ".wav", title]
-else:
-	voice = ["./assets/voice.exe", "-n", "Microsoft David Desktop", "--khz", "48", "-o", "./assets/audio/title.wav", title]
+voice = ["./assets/voice.exe", "-n", "ScanSoft Daniel_Full_22kHz", "--khz", "48", "-o", "./assets/audio/" + "title" + ".wav", title]
 
 subprocess.call(voice)
 convert = [sox_location, "--norm", "./assets/audio/title.wav", "./assets/audio/title_a.mp3"]
@@ -112,10 +99,7 @@ subprocess.call(padding)
 
 
 def voiceThread(text, sox_location, o):
-	if use == "main":
-		voice = ["./assets/voice.exe", "-n", "ScanSoft Daniel_Full_22kHz", "--khz", "48", "-o", "./assets/audio/" + str(o) + ".wav", text]
-	else:
-		voice = ["./assets/voice.exe", "-n", "Microsoft David Desktop", "--khz", "48", "-o", "./assets/audio/" + str(o) + ".wav", text]
+	voice = ["./assets/voice.exe", "-n", "ScanSoft Daniel_Full_22kHz", "--khz", "48", "-o", "./assets/audio/" + str(o) + ".wav", text]
 	subprocess.call(voice)
 
 	convert = [sox_location, "--norm", "./assets/audio/" + str(o) + ".wav", "./assets/audio/" + str(o) + "_a.mp3"]
@@ -126,6 +110,8 @@ def voiceThread(text, sox_location, o):
 	print ("                                                     ", end="\r")
 	print ("Done: Thread " + str(o), end="\r")
 
+print (len(collection))
+	
 for comment in collection:
 	th = threading.Thread(target=voiceThread, args=(collection[comment]["TEXT"], sox_location,collection[comment]["ID"]))
 	threadlist.append(th)
@@ -144,25 +130,23 @@ for comment in collection:
 	collection[comment]["LENGTH"] = length.decode('utf-8')
 
 def downloadComments(link, c):
-	wget = ["curl", "--silent", "-o", "temp/" + str(c) + ".html", "-A", "CraWlER bY ToXoo", link]
+	wget = ["curl", "--silent", "-o", "./temp/" + str(c) + ".html", "-A", "CraWlER bY ToXoo", link]
 	subprocess.call(wget)
 	print ("                                                     ", end="\r")
 	print ("Done: Comment Thread " + str(c), end="\r")
 
 _start = time.time()
-c = 0
-threadlist = []
+threadlist2 = []
 
 for comment in collection:
-	th = threading.Thread(target=downloadComments, args=(collection[comment]["LINK"], c))
-	threadlist.append(th)
-	c = c + 1
+	th = threading.Thread(target=downloadComments, args=(collection[comment]["LINK"], collection[comment]["ID"]))
+	threadlist2.append(th)
 
-for thread in threadlist:
+for thread in threadlist2:
 	thread.start()
 	time.sleep(1)
 
-for thread in threadlist:
+for thread in threadlist2:
 	thread.join()
 
 _end = time.time()
@@ -187,7 +171,7 @@ for song in collection:
 	collection2[song] = collection[song]
 collection = collection2
 cropAndMove(magick_location, collection, "./assets/temp/title.png")
-imageToVideo(ffmpeg_location, collection, lengthlist, dark_mode)
+imageToVideo(ffmpeg_location, collection, dark_mode)
 addTheAudio(ffmpeg_location, collection, "./assets/audio/title.mp3", "./assets/video_silent/title.mp4")
 renderComplete(ffmpeg_location, collection, shuffle)
 
