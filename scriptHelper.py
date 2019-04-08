@@ -106,13 +106,13 @@ def screenshot(list, title, chrome_driver):
 	options.add_argument('disable-infobars')
 	options.add_argument("--disable-extensions")
 	options.add_argument("--log-level=3")
-	options.add_argument("--window-size=1920,1080") #1920 1080 250%,
+	options.add_argument("--window-size=1920,1080") #1920 1080 250%
 	driver = webdriver.Chrome(chrome_options=options, executable_path=chrome)
 	removelist = []
 	for comment in list:
 		driver.get(os.getcwd() + '\\screenshot\\' + list[comment]["ID"] + '.html')
 		driver.execute_script("document.body.style.zoom='250%'")
-		if driver.execute_script("return document.documentElement.clientWidth") == 2560:
+		if driver.execute_script("return document.documentElement.clientWidth") == 1920:
 			driver.save_screenshot(os.getcwd() + '\\screenshot\\' + list[comment]["ID"] + '.png')
 			print("Done: " + list[comment]["ID"] + " / " + str(len(list)))
 		else:

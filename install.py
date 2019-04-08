@@ -6,10 +6,10 @@ import subprocess
 
 print("Installing all the dependencies.")
 url_sox = "https://downloads.sourceforge.net/project/sox/sox/14.4.2/sox-14.4.2-win32.zip?r=https%3A%2F%2Fsourceforge.net%2Fprojects%2Fsox%2Ffiles%2Fsox%2F14.4.2%2Fsox-14.4.2-win32.zip%2Fdownload%3Fuse_mirror%3Dautoselect&ts=1553364475&use_mirror=autoselect" #yes
-url_imagemagick = "ftp://ftp.imagemagick.org/pub/ImageMagick/binaries/ImageMagick-6.9.10-34-portable-Q16-x64.zip" #yes
+url_imagemagick = "https://imagemagick.org/download/binaries/ImageMagick-7.0.8-39-portable-Q16-x64.zip" #yes
 url_ffmpeg = "https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-4.1.1-win64-static.zip" #yes
 url_voice = "https://drive.google.com/uc?authuser=0&id=15j8nEpu3D4ezbTy2Hz_Tr7PjOYKPPKFM&export=download" #yes
-url_selenium = "https://chromedriver.storage.googleapis.com/74.0.3729.6/chromedriver_win32.zip" #yes
+url_selenium = "https://chromedriver.storage.googleapis.com/73.0.3683.68/chromedriver_win32.zip" #yes
 url_lame = "http://www.rarewares.org/files/mp3/libmp3lame-3.99.5x64.zip" #yes
 
 print("Downloading SOX")

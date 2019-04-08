@@ -94,6 +94,9 @@ titlefolder = stringTitle(title)[:20]
 
 if not os.path.exists(("./output/" + titlefolder)):
 	os.mkdir("./output/" + titlefolder)
+	
+if titlefolder.endswith(" "):
+	titlefolder = titlefolder[:19]
 
 if use == "main":
 	voice = ["./assets/voice.exe", "-n", "ScanSoft Daniel_Full_22kHz", "--khz", "48", "-o", "./assets/audio/" + "title" + ".wav", title]
@@ -175,6 +178,14 @@ subprocess.call(wget)
 modify("./assets/temp/title_temp.html", "./assets/temp/title.html", dark_mode)
 
 collection = screenshot(collection, "./assets/temp/title.html", chrome_location)
+collection2 = dict()
+length = 0
+for song in collection:
+	length = length + float(collection[song]["LENGTH"].split("\r")[0])
+	if length > 999:
+		break
+	collection2[song] = collection[song]
+collection = collection2
 cropAndMove(magick_location, collection, "./assets/temp/title.png")
 imageToVideo(ffmpeg_location, collection, lengthlist, dark_mode)
 addTheAudio(ffmpeg_location, collection, "./assets/audio/title.mp3", "./assets/video_silent/title.mp4")
