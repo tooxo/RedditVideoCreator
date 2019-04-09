@@ -5,6 +5,7 @@ import urllib.request, urllib.parse
 from scriptHelper import *
 import os
 import threading
+import validators
 
 def countdown(time_d):
 	while time_d > 0:
@@ -69,6 +70,17 @@ for comment in json[1]["data"]["children"]:
 	except Exception:
 		pass
 
+	split_body = body.split(" ")
+	body = ""
+	for text in split_body:
+		if validators.url(text) == True:
+			continue
+		else:
+			body = body + " " + text
+
+	if body == "[deleted]":
+		continue
+
 	collection[index]["TEXT"] = body
 	collection[index]["AUTHOR"] = comment["data"]["author"]
 	index = index+1
@@ -84,7 +96,7 @@ titlefolder = stringTitle(title)[:20]
 
 if not os.path.exists(("./output/" + titlefolder)):
 	os.mkdir("./output/" + titlefolder)
-	
+
 if titlefolder.endswith(" "):
 	titlefolder = titlefolder[:19]
 
@@ -111,7 +123,7 @@ def voiceThread(text, sox_location, o):
 	print ("Done: Thread " + str(o), end="\r")
 
 print (len(collection))
-	
+
 for comment in collection:
 	th = threading.Thread(target=voiceThread, args=(collection[comment]["TEXT"], sox_location,collection[comment]["ID"]))
 	threadlist.append(th)
