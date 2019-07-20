@@ -1,7 +1,7 @@
 {
-	"thread": "https://www.reddit.com/r/AskReddit/comments/az3urn/what_mistake_should_have_killed_you/",
+	"thread": "https://www.reddit.com/r/AskReddit/comments/cfk1z7/people_who_can_fall_asleep_within_5_minutes_of/",
 	"_comment": "Your Thread URL goes above",
-	"ffmpeg_location": "./assets/bin/ffmpeg/bin/ffmpeg.exe",
+	"ffmpeg_location": "./assets/bin/ffmpeg/ffmpeg.exe",
 	"sox_location": "./assets/bin/sox/sox.exe",
 	"magick_location": "./assets/bin/imagemagick/convert.exe",
 	"chrome_driver_location": "./assets/bin/chromedriver/chromedriver.exe",
